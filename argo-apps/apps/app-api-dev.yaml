@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-api-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rafalohmann/adk-call-analytics-platform
+    targetRevision: main
+    path: helm-charts/app-base
+    helm:
+      releaseName: app-api
+      valuesObject:
+        nameOverride: app-api
+        image:
+          repository: ghcr.io/rafalohmann/adk-call-analytics-api
+          tag: main
+          pullPolicy: Always
+        imagePullSecrets:
+          - name: ghcr-pull-secret
+        replicaCount: 1
+        service:
+          port: 8000
+        env:
+          - name: POSTGRES_SERVER
+            value: postgres-postgresql
+          - name: POSTGRES_DB
+            value: call_analytics
+          - name: ENVIRONMENT
+            value: local
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health/live
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health/ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

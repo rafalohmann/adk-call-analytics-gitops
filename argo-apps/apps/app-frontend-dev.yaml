@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-frontend-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rafalohmann/adk-call-analytics-platform
+    targetRevision: main
+    path: helm-charts/app-base
+    helm:
+      releaseName: app-frontend
+      valuesObject:
+        nameOverride: app-frontend
+        image:
+          repository: ghcr.io/rafalohmann/adk-call-analytics-frontend
+          tag: main
+          pullPolicy: Always
+        imagePullSecrets:
+          - name: ghcr-pull-secret
+        replicaCount: 1
+        service:
+          port: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

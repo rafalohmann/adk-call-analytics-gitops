@@ -1,0 +1,24 @@
+# Optional: single root Application that deploys all apps under argo-apps/apps/.
+# Apply from GitOps repo after Argo CD is installed:
+#   kubectl apply -f argo-apps/dev/app-of-apps.yaml
+# Or apply the platform's bootstrap-application.yaml which points to this path.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rafalohmann/adk-call-analytics-gitops
+    targetRevision: main
+    path: argo-apps/apps
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

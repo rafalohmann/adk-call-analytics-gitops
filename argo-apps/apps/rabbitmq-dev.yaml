@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rabbitmq-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rafalohmann/adk-call-analytics-platform
+    targetRevision: main
+    path: helm-charts/rabbitmq
+    helm:
+      releaseName: rabbitmq
+      valuesObject:
+        rabbitmq:
+          auth:
+            username: user
+            password: CHANGEME
+          persistence:
+            enabled: true
+            size: 2Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

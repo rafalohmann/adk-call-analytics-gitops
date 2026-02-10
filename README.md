@@ -1,28 +1,24 @@
 # adk-call-analytics-gitops
 
-GitOps “environments” repository for the Call Analytics project.
-
-Argo CD points to this repo to determine **what runs where** across environments.
-
-## Responsibilities
-
-- Define Argo CD `Application` (and optionally `ApplicationSet`) resources.
-- Provide per-environment Kustomize overlays and Helm values for:
-  - `adk-call-analytics-api`
-  - `adk-call-analytics-worker`
-  - `adk-call-analytics-frontend`
-  - Postgres + pgvector
-  - RabbitMQ (or Kafka) and other core dependencies
-- Control image tags, scaling, and configuration per environment.
+GitOps "environments" repository for the Call Analytics project. Argo CD points to this repo to determine **what runs where** across environments.
 
 ## Structure
 
-- `argo-apps/`: Argo CD Application definitions for platform and apps.
-- `envs/`: Environment overlays:
-  - `dev/`, `stage/`, `prod/` with their own app values and namespaces.
+- **argo-apps/apps/**: Argo CD `Application` manifests for dev (api, worker, frontend, postgres, rabbitmq). Each Application references the platform repo for Helm charts and inlines env-specific values in `spec.source.helm.valuesObject`.
+- **argo-apps/dev/app-of-apps.yaml**: Optional root Application that syncs the directory `argo-apps/apps` so all dev apps are deployed when Argo CD applies it.
+- **envs/dev/**: Kustomize for the `dev` namespace (namespace.yaml, kustomization.yaml). Apply separately or let Argo CD create the namespace when syncing apps.
 
-## Workflow
+## Adding or changing an app
 
-- CI in application repos updates the image tags here (e.g. in `envs/dev/apps/app-api/values.yaml`).
-- Changes to `stage`/`prod` are made via pull requests for review and approval.
+1. Edit the corresponding file under `argo-apps/apps/` (e.g. `app-api-dev.yaml`).
+2. Chart source is the platform repo; override image, env, replicas, and probes via `spec.source.helm.valuesObject`.
+3. Commit and push. If sync is automated, Argo CD will apply changes.
 
+## Image tags
+
+Update `spec.source.helm.valuesObject.image.tag` (and optionally `image.repository`) in the relevant Application YAML. Use immutable tags (e.g. commit SHA or semver) for production. CI in app repos can commit tag updates to this repo for dev.
+
+## Promotion
+
+- **dev**: Direct pushes to `main` or PR; automated sync.
+- **stage / prod**: Use PR-based changes to the corresponding env paths (e.g. `argo-apps/apps/` for stage) with review and approval. No raw secrets in Git; use placeholders (e.g. `CHANGEME`) and inject real values via External Secrets or `kubectl create secret`.

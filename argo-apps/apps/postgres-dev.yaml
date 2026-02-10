@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rafalohmann/adk-call-analytics-platform
+    targetRevision: main
+    path: helm-charts/postgres
+    helm:
+      releaseName: postgres
+      valuesObject:
+        postgresql:
+          auth:
+            username: postgres
+            password: CHANGEME
+            database: call_analytics
+          primary:
+            persistence:
+              enabled: true
+              size: 8Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -2,7 +2,7 @@
 
 - **Repo ID**: adk-call-analytics-gitops
 - **Full name**: Call Analytics – GitOps Environments
-- **Owner**: Personal / rafaellohmann
+- **Owner**: Personal / rafalohmann
 - **Description**: GitOps repository defining the desired state of Call Analytics environments (dev/stage/prod) using Argo CD, Helm, and Kustomize.
 
 ## Relationships
