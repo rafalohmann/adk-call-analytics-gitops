@@ -15,7 +15,7 @@ spec:
         nameOverride: app-api
         image:
           repository: ghcr.io/rafalohmann/adk-call-analytics-api
-          tag: main
+          tag: latest
           pullPolicy: Always
         imagePullSecrets:
           - name: ghcr-pull-secret

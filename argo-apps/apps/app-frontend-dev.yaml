@@ -15,7 +15,7 @@ spec:
         nameOverride: app-frontend
         image:
           repository: ghcr.io/rafalohmann/adk-call-analytics-frontend
-          tag: main
+          tag: latest
           pullPolicy: Always
         imagePullSecrets:
           - name: ghcr-pull-secret
