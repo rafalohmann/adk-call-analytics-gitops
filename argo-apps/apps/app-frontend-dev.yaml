@@ -22,6 +22,9 @@ spec:
         replicaCount: 1
         service:
           port: 80
+        env:
+          - name: API_BACKEND_URL
+            value: "http://app-api-app-api:8000"
         livenessProbe:
           httpGet:
             path: /
